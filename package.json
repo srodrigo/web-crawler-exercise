@@ -7,7 +7,19 @@
     "build": "babel src -d dist",
     "start": "node ./src/index.js",
     "test": "jest",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "lint": "eslint 'src/**/*' && prettier --write 'src/**/*'"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*": [
+      "eslint -c .eslintrc --fix",
+      "prettier --write"
+    ]
   },
   "author": "Sergio Rodrigo Royo",
   "license": "ISC",
@@ -16,6 +28,12 @@
     "@babel/core": "^7.11.1",
     "@babel/preset-env": "^7.11.0",
     "babel-jest": "^26.3.0",
-    "jest": "^26.3.0"
+    "eslint": "^7.6.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "husky": "^4.2.5",
+    "jest": "^26.3.0",
+    "lint-staged": "^10.2.11",
+    "prettier": "2.0.5"
   }
 }
