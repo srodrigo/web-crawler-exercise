@@ -1,0 +1,14 @@
+{
+  "name": "web-crawler-exercise",
+  "version": "0.0.1",
+  "description": "Web crawler to generate a site map",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Sergio Rodrigo Royo",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^26.3.0"
+  }
+}
