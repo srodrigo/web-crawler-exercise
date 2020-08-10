@@ -1,22 +1,44 @@
 import axios from "axios";
 import { JSDOM } from "jsdom";
 
-const generateSiteMetadata = url =>
-  axios.get(url).then(response => {
-    const dom = new JSDOM(response.data);
-    const { document } = dom.window;
+const generateSiteMetadata = url => {
+  const domain = new URL(url).hostname;
 
-    return {
-      siteMap: {
-        url,
-        children: [...document.querySelectorAll("a")]
-          .filter(link => link.getAttribute("href") !== "/")
-          .map(link => ({
-            url: link.getAttribute("href"),
-            name: link.textContent,
-          })),
-      },
-    };
-  });
+  const addHostname = relativeUrl =>
+    relativeUrl.includes(domain) ? relativeUrl : `${url}${relativeUrl}`;
+
+  const generatePageMetadata = async relativeUrl => {
+    const fullUrl = addHostname(relativeUrl, url);
+    const { data } = await axios.get(fullUrl);
+
+    const dom = new JSDOM(data);
+    const { document } = dom.window;
+    const children = [...document.querySelectorAll("a")].filter(
+      link => link.getAttribute("href") !== "/"
+    );
+
+    if (children.length === 0) {
+      return [];
+    }
+
+    return Promise.all(
+      children.map(child => {
+        const childUrl = child.getAttribute("href");
+        return generatePageMetadata(childUrl).then(childMetadata => ({
+          url: childUrl,
+          name: child.textContent,
+          children: childMetadata,
+        }));
+      })
+    );
+  };
+
+  return generatePageMetadata(url).then(pageMetadata => ({
+    siteMap: {
+      url,
+      children: pageMetadata,
+    },
+  }));
+};
 
 export { generateSiteMetadata };

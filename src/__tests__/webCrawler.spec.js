@@ -7,27 +7,46 @@ const extractDomain = url => url.replace("http://", "");
 const loadWebsitePage = (url, page) =>
   fs.readFileSync(`./src/__tests__/fixtures/${extractDomain(url)}-${page}.html`, "utf8");
 
+const mockPageVisit = (url, page) => {
+  axios.get.mockImplementationOnce(() => Promise.resolve({ data: loadWebsitePage(url, page) }));
+};
+
 jest.mock("axios");
 
 describe("Web Crawler", () => {
-  it("generates site map from a URL", async () => {
+  it("generates site map from a URL, recursively", async () => {
     const url = "http://website.com";
-    axios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: loadWebsitePage(url, "mainPage"),
-      })
-    );
+    mockPageVisit(url, "mainPage");
+    mockPageVisit(url, "product");
+    mockPageVisit(url, "features");
+    mockPageVisit(url, "product-first-page");
+    mockPageVisit(url, "product-second-page");
 
     const { siteMap } = await generateSiteMetadata(url);
 
-    await expect(siteMap).toEqual({
+    expect(siteMap).toEqual({
       url: "http://website.com",
       children: [
-        { url: "/product", name: "Product" },
-        { url: "/features", name: "Features" },
-        { url: "/solutions", name: "Solutions" },
-        { url: "/blog", name: "Blog" },
+        {
+          url: "/product",
+          name: "Product",
+          children: [
+            { url: "/product-first-page", name: "Product First Page", children: [] },
+            { url: "/product-second-page", name: "Product Second Page", children: [] },
+          ],
+        },
+        {
+          url: "/features",
+          name: "Features",
+          children: [],
+        },
       ],
     });
+    expect(axios.get).toHaveBeenCalledTimes(5);
+    expect(axios.get).toHaveBeenCalledWith(url);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/product`);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/features`);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/product-first-page`);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/product-second-page`);
   });
 });
