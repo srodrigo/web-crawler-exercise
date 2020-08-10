@@ -4,11 +4,18 @@
   "description": "Web crawler to generate a site map",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "build": "babel src -d dist",
+    "start": "node ./src/index.js",
+    "test": "jest",
+    "test:watch": "jest --watchAll"
   },
   "author": "Sergio Rodrigo Royo",
   "license": "ISC",
   "devDependencies": {
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.11.1",
+    "@babel/preset-env": "^7.11.0",
+    "babel-jest": "^26.3.0",
     "jest": "^26.3.0"
   }
 }
