@@ -81,4 +81,20 @@ describe("Web Crawler", () => {
     expect(axios.get).toHaveBeenCalledTimes(1);
     expect(axios.get).toHaveBeenCalledWith(url);
   });
+
+  it("does not visit pages twice", async () => {
+    const url = "http://with-duplicate-pages.com";
+    mockPageVisit(url, "mainPage");
+    mockPageVisit(url, "innerPage");
+
+    const { siteMap } = await generateSiteMetadata(url);
+
+    expect(siteMap).toEqual({
+      url,
+      children: [{ url: "/inner-page", name: "Inner Page", children: [] }],
+    });
+    expect(axios.get).toHaveBeenCalledTimes(2);
+    expect(axios.get).toHaveBeenCalledWith(url);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/inner-page`);
+  });
 });

@@ -3,6 +3,7 @@ import { JSDOM } from "jsdom";
 
 const generateSiteMetadata = rootUrl => {
   const domain = new URL(rootUrl).hostname;
+  const visitedPages = [];
 
   const addHostname = relativeUrl =>
     relativeUrl.includes(domain) ? relativeUrl : `${rootUrl}${relativeUrl}`;
@@ -12,14 +13,16 @@ const generateSiteMetadata = rootUrl => {
   const generatePageMetadata = async relativeUrl => {
     const fullUrl = addHostname(relativeUrl, rootUrl);
 
-    console.log("full url: ", fullUrl);
     const { data } = await axios.get(fullUrl);
+    visitedPages.push(relativeUrl);
 
     const dom = new JSDOM(data);
     const { document } = dom.window;
     const children = [...document.querySelectorAll("a")].filter(link => {
       const href = link.getAttribute("href");
-      return href && (href.includes(domain) || isRelativePath(href));
+      return (
+        href && (href.includes(domain) || isRelativePath(href)) && !visitedPages.includes(href)
+      );
     });
 
     if (children.length === 0) {
