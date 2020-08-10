@@ -1,21 +1,26 @@
 import axios from "axios";
 import { JSDOM } from "jsdom";
 
-const generateSiteMetadata = url => {
-  const domain = new URL(url).hostname;
+const generateSiteMetadata = rootUrl => {
+  const domain = new URL(rootUrl).hostname;
 
   const addHostname = relativeUrl =>
-    relativeUrl.includes(domain) ? relativeUrl : `${url}${relativeUrl}`;
+    relativeUrl.includes(domain) ? relativeUrl : `${rootUrl}${relativeUrl}`;
+
+  const isRelativePath = relativeUrl => /^\/[\w\d\-_]+/g.test(relativeUrl);
 
   const generatePageMetadata = async relativeUrl => {
-    const fullUrl = addHostname(relativeUrl, url);
+    const fullUrl = addHostname(relativeUrl, rootUrl);
+
+    console.log("full url: ", fullUrl);
     const { data } = await axios.get(fullUrl);
 
     const dom = new JSDOM(data);
     const { document } = dom.window;
-    const children = [...document.querySelectorAll("a")]
-      .filter(link => link.getAttribute("href") !== "/")
-      .filter(link => link.getAttribute("href") !== "#");
+    const children = [...document.querySelectorAll("a")].filter(link => {
+      const href = link.getAttribute("href");
+      return href && (href.includes(domain) || isRelativePath(href));
+    });
 
     if (children.length === 0) {
       return [];
@@ -33,9 +38,9 @@ const generateSiteMetadata = url => {
     );
   };
 
-  return generatePageMetadata(url).then(pageMetadata => ({
+  return generatePageMetadata(rootUrl).then(pageMetadata => ({
     siteMap: {
-      url,
+      url: rootUrl,
       children: pageMetadata,
     },
   }));
