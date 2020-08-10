@@ -13,9 +13,9 @@ const generateSiteMetadata = url => {
 
     const dom = new JSDOM(data);
     const { document } = dom.window;
-    const children = [...document.querySelectorAll("a")].filter(
-      link => link.getAttribute("href") !== "/"
-    );
+    const children = [...document.querySelectorAll("a")]
+      .filter(link => link.getAttribute("href") !== "/")
+      .filter(link => link.getAttribute("href") !== "#");
 
     if (children.length === 0) {
       return [];
