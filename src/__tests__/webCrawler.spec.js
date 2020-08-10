@@ -54,6 +54,20 @@ describe("Web Crawler", () => {
     expect(axios.get).toHaveBeenCalledWith(`${url}/product-second-page`);
   });
 
+  it("filters anchors out", async () => {
+    const url = "http://with-anchors.com";
+    mockPageVisit(url, "mainPage");
+
+    const { siteMap } = await generateSiteMetadata(url);
+
+    expect(siteMap).toEqual({
+      url,
+      children: [],
+    });
+    expect(axios.get).toHaveBeenCalledTimes(1);
+    expect(axios.get).toHaveBeenCalledWith(url);
+  });
+
   it("filters external domains out", async () => {
     const url = "http://with-external-domain.com";
     mockPageVisit(url, "mainPage");
