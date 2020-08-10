@@ -1,11 +1,13 @@
 {
   "extends": ["prettier"],
   "parserOptions": {
-    "sourceType": "module"
+    "sourceType": "module",
+    "ecmaVersion": 8
   },
   "plugins": ["prettier"],
   "env": {
     "es6": true,
     "jest": true
-  }
+  },
+  "ignorePatterns": ["*.html"]
 }
