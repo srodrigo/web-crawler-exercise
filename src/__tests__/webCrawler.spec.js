@@ -18,6 +18,35 @@ describe("Web Crawler", () => {
     jest.resetAllMocks();
   });
 
+  it("generates site map from a URL with one level of depth", async () => {
+    const url = "http://with-depth-one.com";
+    mockPageVisit(url, "mainPage");
+    mockPageVisit(url, "product");
+    mockPageVisit(url, "features");
+
+    const { siteMap } = await generateSiteMetadata(url);
+
+    expect(siteMap).toEqual({
+      url,
+      children: [
+        {
+          url: `${url}/product`,
+          name: "Product",
+          children: [],
+        },
+        {
+          url: `${url}/features`,
+          name: "Features",
+          children: [],
+        },
+      ],
+    });
+    expect(axios.get).toHaveBeenCalledTimes(3);
+    expect(axios.get).toHaveBeenCalledWith(url);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/product`);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/features`);
+  });
+
   it("generates site map from a URL, recursively", async () => {
     const url = "http://website.com";
     mockPageVisit(url, "mainPage");
@@ -32,15 +61,15 @@ describe("Web Crawler", () => {
       url,
       children: [
         {
-          url: "/product",
+          url: `${url}/product`,
           name: "Product",
           children: [
-            { url: "/product-first-page", name: "Product First Page", children: [] },
-            { url: "/product-second-page", name: "Product Second Page", children: [] },
+            { url: `${url}/product-first-page`, name: "Product First Page", children: [] },
+            { url: `${url}/product-second-page`, name: "Product Second Page", children: [] },
           ],
         },
         {
-          url: "/features",
+          url: `${url}/features`,
           name: "Features",
           children: [],
         },
@@ -56,6 +85,20 @@ describe("Web Crawler", () => {
 
   it("filters anchors out", async () => {
     const url = "http://with-anchors.com";
+    mockPageVisit(url, "mainPage");
+
+    const { siteMap } = await generateSiteMetadata(url);
+
+    expect(siteMap).toEqual({
+      url,
+      children: [],
+    });
+    expect(axios.get).toHaveBeenCalledTimes(1);
+    expect(axios.get).toHaveBeenCalledWith(url);
+  });
+
+  it("filters mailto out", async () => {
+    const url = "http://with-mailto.com";
     mockPageVisit(url, "mainPage");
 
     const { siteMap } = await generateSiteMetadata(url);
@@ -91,10 +134,35 @@ describe("Web Crawler", () => {
 
     expect(siteMap).toEqual({
       url,
-      children: [{ url: "/inner-page", name: "Inner Page", children: [] }],
+      children: [{ url: `${url}/inner-page`, name: "Inner Page", children: [] }],
     });
     expect(axios.get).toHaveBeenCalledTimes(2);
     expect(axios.get).toHaveBeenCalledWith(url);
     expect(axios.get).toHaveBeenCalledWith(`${url}/inner-page`);
+  });
+
+  it("does not include the same pages twice", async () => {
+    const url = "http://with-multiple-occurences.com";
+    mockPageVisit(url, "mainPage");
+    mockPageVisit(url, "innerPage");
+    mockPageVisit(url, "anotherPage");
+    mockPageVisit(url, "anotherPage");
+
+    const { siteMap } = await generateSiteMetadata(url);
+
+    expect(siteMap).toEqual({
+      url,
+      children: [
+        {
+          url: `${url}/inner-page`,
+          name: "Inner Page",
+          children: [{ url: `${url}/another-page`, name: "Another Page", children: [] }],
+        },
+      ],
+    });
+    expect(axios.get).toHaveBeenCalledTimes(3);
+    expect(axios.get).toHaveBeenCalledWith(url);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/inner-page`);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/another-page`);
   });
 });
