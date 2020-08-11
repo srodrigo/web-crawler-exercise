@@ -3,6 +3,9 @@ import { JSDOM } from "jsdom";
 
 const isRelativePath = url => /^\/[\w\d\-]+/g.test(url);
 const isValidUrl = url => /(^http[s]?:\/{2})|(^www)|(^\/{1,2}[\w\d\-]+)/g.test(url);
+const parseDomain = url => new URL(url).hostname;
+const addRootUrl = rootUrl => url =>
+  url.includes(parseDomain(rootUrl)) || !isRelativePath(url) ? url : `${rootUrl}${url}`;
 
 const createNode = (url, children = []) => ({
   url,
@@ -32,19 +35,16 @@ const findNodeWithUrl = (siteMap, url) => {
 const generateSiteMap = async (rootUrl, logger) => {
   const siteMap = createNode(rootUrl);
 
-  const domain = new URL(rootUrl).hostname;
   const visitedPages = [];
-
-  const addHostname = url =>
-    url.includes(domain) || !isRelativePath(url) ? url : `${rootUrl}${url}`;
-
-  const urlsToFetch = [addHostname(rootUrl)];
+  const urlsToFetch = [rootUrl];
 
   const processLinks = (document, parent) => {
+    const domain = parseDomain(rootUrl);
+
     [...document.querySelectorAll("a[href], link[href]")]
       .map(link => link.getAttribute("href"))
       .filter(url => isValidUrl(url))
-      .map(addHostname)
+      .map(addRootUrl(rootUrl))
       .forEach(url => {
         if (!visitedPages.includes(url) && !urlsToFetch.includes(url) && isValidUrl(url)) {
           parent.children.push(createNode(url));
