@@ -2,10 +2,20 @@ import axios from "axios";
 import { JSDOM } from "jsdom";
 
 const isRelativePath = url => /^\/[\w\d\-]+/g.test(url);
+
 const isValidUrl = url => /(^http[s]?:\/{2})|(^www)|(^\/{1,2}[\w\d\-]+)/g.test(url);
+
 const parseDomain = url => new URL(url).hostname;
+
+const removeTrailingSlash = url => {
+  const endPosition = url.length - 1;
+  return url.charAt(endPosition) === "/" ? url.substring(0, endPosition) : url;
+};
+
 const addRootUrl = rootUrl => url =>
-  url.includes(parseDomain(rootUrl)) || !isRelativePath(url) ? url : `${rootUrl}${url}`;
+  url.includes(parseDomain(rootUrl)) || !isRelativePath(url)
+    ? removeTrailingSlash(url)
+    : `${removeTrailingSlash(rootUrl)}${url}`;
 
 const createNode = (url, children = []) => ({
   url,
@@ -28,8 +38,6 @@ const findNodeWithUrl = (siteMap, url) => {
       children.push(grandChild);
     });
   }
-
-  return null;
 };
 
 const generateSiteMap = async (rootUrl, logger) => {

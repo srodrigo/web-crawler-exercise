@@ -38,6 +38,33 @@ describe("Web Crawler", () => {
     expect(axios.get).toHaveBeenCalledWith(`${url}/features`);
   });
 
+  it("generates site map from a URL with trailing slash", async () => {
+    const url = "http://with-depth-one.com/";
+    mockPageVisit(url, "mainPage");
+    mockPageVisit(url, "product");
+    mockPageVisit(url, "features");
+
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
+
+    expect(siteMap).toEqual({
+      url,
+      children: [
+        {
+          url: `${url}product`,
+          children: [],
+        },
+        {
+          url: `${url}features`,
+          children: [],
+        },
+      ],
+    });
+    expect(axios.get).toHaveBeenCalledTimes(3);
+    expect(axios.get).toHaveBeenCalledWith(url);
+    expect(axios.get).toHaveBeenCalledWith(`${url}product`);
+    expect(axios.get).toHaveBeenCalledWith(`${url}features`);
+  });
+
   it("generates site map from a URL, recursively", async () => {
     const url = "http://website.com";
     mockPageVisit(url, "mainPage");
