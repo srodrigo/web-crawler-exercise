@@ -54,6 +54,7 @@ describe("Web Crawler", () => {
     mockPageVisit(url, "features");
     mockPageVisit(url, "product-first-page");
     mockPageVisit(url, "product-second-page");
+    mockPageVisit(url, "product-second-page-child");
 
     const { siteMap } = await generateSiteMetadata(url);
 
@@ -65,7 +66,17 @@ describe("Web Crawler", () => {
           name: "Product",
           children: [
             { url: `${url}/product-first-page`, name: "Product First Page", children: [] },
-            { url: `${url}/product-second-page`, name: "Product Second Page", children: [] },
+            {
+              url: `${url}/product-second-page`,
+              name: "Product Second Page",
+              children: [
+                {
+                  url: `${url}/product-second-page-child`,
+                  name: "Product Second Page Child",
+                  children: [],
+                },
+              ],
+            },
           ],
         },
         {
@@ -75,12 +86,13 @@ describe("Web Crawler", () => {
         },
       ],
     });
-    expect(axios.get).toHaveBeenCalledTimes(5);
+    expect(axios.get).toHaveBeenCalledTimes(6);
     expect(axios.get).toHaveBeenCalledWith(url);
     expect(axios.get).toHaveBeenCalledWith(`${url}/product`);
     expect(axios.get).toHaveBeenCalledWith(`${url}/features`);
     expect(axios.get).toHaveBeenCalledWith(`${url}/product-first-page`);
     expect(axios.get).toHaveBeenCalledWith(`${url}/product-second-page`);
+    expect(axios.get).toHaveBeenCalledWith(`${url}/product-second-page-child`);
   });
 
   it("filters anchors out", async () => {
