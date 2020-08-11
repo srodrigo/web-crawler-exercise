@@ -1,7 +1,7 @@
 import axios from "axios";
 import { JSDOM } from "jsdom";
 
-const generateSiteMetadata = async rootUrl => {
+const generateSiteMetadata = async (rootUrl, logger = console) => {
   const domain = new URL(rootUrl).hostname;
 
   const addHostname = relativeUrl =>
@@ -46,6 +46,7 @@ const generateSiteMetadata = async rootUrl => {
       visitedPages.push(fullUrl);
 
       try {
+        logger.log(`Fetching ${fullUrl}`);
         const { data } = await axios.get(fullUrl);
         const dom = new JSDOM(data);
         const { document } = dom.window;
@@ -64,7 +65,7 @@ const generateSiteMetadata = async rootUrl => {
             }
           });
       } catch (error) {
-        console.log(`Could not fetch ${fullUrl}`);
+        logger.log(`Could not fetch ${fullUrl}`);
       }
     }
 

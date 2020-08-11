@@ -11,6 +11,10 @@ const mockPageVisit = (url, page) => {
   axios.get.mockImplementationOnce(() => Promise.resolve({ data: loadWebsitePage(url, page) }));
 };
 
+const createSilentLogger = () => ({
+  log: () => {},
+});
+
 jest.mock("axios");
 
 describe("Web Crawler", () => {
@@ -24,7 +28,7 @@ describe("Web Crawler", () => {
     mockPageVisit(url, "product");
     mockPageVisit(url, "features");
 
-    const { siteMap } = await generateSiteMetadata(url);
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
 
     expect(siteMap).toEqual({
       url,
@@ -54,7 +58,7 @@ describe("Web Crawler", () => {
     mockPageVisit(url, "product-second-page");
     mockPageVisit(url, "product-second-page-child");
 
-    const { siteMap } = await generateSiteMetadata(url);
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
 
     expect(siteMap).toEqual({
       url,
@@ -93,7 +97,7 @@ describe("Web Crawler", () => {
     const url = "http://with-anchors.com";
     mockPageVisit(url, "mainPage");
 
-    const { siteMap } = await generateSiteMetadata(url);
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
 
     expect(siteMap).toEqual({
       url,
@@ -107,7 +111,7 @@ describe("Web Crawler", () => {
     const url = "http://with-mailto.com";
     mockPageVisit(url, "mainPage");
 
-    const { siteMap } = await generateSiteMetadata(url);
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
 
     expect(siteMap).toEqual({
       url,
@@ -121,7 +125,7 @@ describe("Web Crawler", () => {
     const url = "http://with-external-domain.com";
     mockPageVisit(url, "mainPage");
 
-    const { siteMap } = await generateSiteMetadata(url);
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
 
     expect(siteMap).toEqual({
       url,
@@ -136,7 +140,7 @@ describe("Web Crawler", () => {
     mockPageVisit(url, "mainPage");
     mockPageVisit(url, "innerPage");
 
-    const { siteMap } = await generateSiteMetadata(url);
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
 
     expect(siteMap).toEqual({
       url,
@@ -154,7 +158,7 @@ describe("Web Crawler", () => {
     mockPageVisit(url, "anotherPage");
     mockPageVisit(url, "anotherPage");
 
-    const { siteMap } = await generateSiteMetadata(url);
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
 
     expect(siteMap).toEqual({
       url,
