@@ -179,6 +179,25 @@ describe("Web Crawler", () => {
     expect(axios.get).toHaveBeenCalledWith(url);
   });
 
+  it("does not fetch external domains containing a reference to the website domain, but still includes them", async () => {
+    const url = "http://with-external-domain-with-reference.com";
+    mockPageVisit(url, "mainPage");
+
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
+
+    expect(siteMap).toEqual({
+      url,
+      children: [
+        {
+          url: "http://to-be-filtered-out.com?ref=with-external-domain-with-reference.com/some-url",
+          children: [],
+        },
+      ],
+    });
+    expect(axios.get).toHaveBeenCalledTimes(1);
+    expect(axios.get).toHaveBeenCalledWith(url);
+  });
+
   it("does not visit pages twice", async () => {
     const url = "http://with-duplicate-pages.com";
     mockPageVisit(url, "mainPage");

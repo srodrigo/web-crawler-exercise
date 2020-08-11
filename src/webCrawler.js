@@ -7,6 +7,15 @@ const isValidUrl = url => /(^http[s]?:\/{2})|(^www)|(^\/{1,2}[\w\d\-]+)/g.test(u
 
 const parseDomain = url => new URL(url).hostname;
 
+const escapeDots = url => url.replace(".", "\\.");
+
+const startsWithDomain = (url, domain) => {
+  const escapedDomain = escapeDots(domain);
+  return new RegExp(
+    `(^http[s]?:\/{2}(www\.)?${escapedDomain})|(^www\.${escapedDomain})|(^${escapedDomain})`
+  ).test(url);
+};
+
 const removeTrailingSlash = url => {
   const endPosition = url.length - 1;
   return url.charAt(endPosition) === "/" ? url.substring(0, endPosition) : url;
@@ -57,7 +66,7 @@ const generateSiteMap = async (rootUrl, logger) => {
         if (!visitedPages.includes(url) && !urlsToFetch.includes(url) && isValidUrl(url)) {
           parent.children.push(createNode(url));
 
-          if (url.includes(domain)) {
+          if (startsWithDomain(url, domain)) {
             urlsToFetch.push(url);
           }
         }
