@@ -31,12 +31,10 @@ describe("Web Crawler", () => {
       children: [
         {
           url: `${url}/product`,
-          name: "Product",
           children: [],
         },
         {
           url: `${url}/features`,
-          name: "Features",
           children: [],
         },
       ],
@@ -63,16 +61,13 @@ describe("Web Crawler", () => {
       children: [
         {
           url: `${url}/product`,
-          name: "Product",
           children: [
-            { url: `${url}/product-first-page`, name: "Product First Page", children: [] },
+            { url: `${url}/product-first-page`, children: [] },
             {
               url: `${url}/product-second-page`,
-              name: "Product Second Page",
               children: [
                 {
                   url: `${url}/product-second-page-child`,
-                  name: "Product Second Page Child",
                   children: [],
                 },
               ],
@@ -81,7 +76,6 @@ describe("Web Crawler", () => {
         },
         {
           url: `${url}/features`,
-          name: "Features",
           children: [],
         },
       ],
@@ -146,7 +140,7 @@ describe("Web Crawler", () => {
 
     expect(siteMap).toEqual({
       url,
-      children: [{ url: `${url}/inner-page`, name: "Inner Page", children: [] }],
+      children: [{ url: `${url}/inner-page`, children: [] }],
     });
     expect(axios.get).toHaveBeenCalledTimes(2);
     expect(axios.get).toHaveBeenCalledWith(url);
@@ -167,8 +161,7 @@ describe("Web Crawler", () => {
       children: [
         {
           url: `${url}/inner-page`,
-          name: "Inner Page",
-          children: [{ url: `${url}/another-page`, name: "Another Page", children: [] }],
+          children: [{ url: `${url}/another-page`, children: [] }],
         },
       ],
     });

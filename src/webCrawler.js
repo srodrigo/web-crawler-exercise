@@ -30,12 +30,16 @@ const generateSiteMetadata = async rootUrl => {
     return null;
   };
 
-  const generatePageMetadata = async () => {
-    const pageMetadata = { url: rootUrl, children: [] };
+  const createNode = (url, children = []) => ({
+    url,
+    children,
+  });
 
-    const fullUrl = addHostname(rootUrl);
+  const generatePageMetadata = async () => {
+    const pageMetadata = createNode(rootUrl);
+
     const visitedPages = [];
-    const urlsToFetch = [fullUrl];
+    const urlsToFetch = [addHostname(rootUrl)];
 
     while (urlsToFetch.length > 0) {
       const fullUrl = urlsToFetch.shift();
@@ -43,28 +47,22 @@ const generateSiteMetadata = async rootUrl => {
 
       try {
         const { data } = await axios.get(fullUrl);
-
         const dom = new JSDOM(data);
         const { document } = dom.window;
 
-        const childrenNodes = [...document.querySelectorAll("a")].filter(link => {
-          const href = link.getAttribute("href");
-          return href && isNotMailto(href) && (href.includes(domain) || isRelativePath(href));
-        });
-
         const parent = findNodeWithUrl(pageMetadata, fullUrl);
-
-        childrenNodes.forEach(child => {
-          const fullUrl = addHostname(child.getAttribute("href"));
-          if (!visitedPages.includes(fullUrl) && !urlsToFetch.includes(fullUrl)) {
-            parent.children.push({
-              url: fullUrl,
-              name: child.textContent,
-              children: [],
-            });
-            urlsToFetch.push(fullUrl);
-          }
-        });
+        [...document.querySelectorAll("a")]
+          .filter(link => {
+            const href = link.getAttribute("href");
+            return href && isNotMailto(href) && (href.includes(domain) || isRelativePath(href));
+          })
+          .forEach(link => {
+            const fullLinkUrl = addHostname(link.getAttribute("href"));
+            if (!visitedPages.includes(fullLinkUrl) && !urlsToFetch.includes(fullLinkUrl)) {
+              parent.children.push(createNode(fullLinkUrl));
+              urlsToFetch.push(fullLinkUrl);
+            }
+          });
       } catch (error) {
         console.log(`Could not fetch ${fullUrl}`);
       }
