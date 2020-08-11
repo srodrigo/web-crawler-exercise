@@ -4,11 +4,11 @@ import { JSDOM } from "jsdom";
 const generateSiteMetadata = async (rootUrl, logger = console) => {
   const domain = new URL(rootUrl).hostname;
 
-  const addHostname = relativeUrl =>
-    relativeUrl.includes(domain) ? relativeUrl : `${rootUrl}${relativeUrl}`;
+  const addHostname = url =>
+    url.includes(domain) || !isRelativePath(url) ? url : `${rootUrl}${url}`;
 
-  const isRelativePath = relativeUrl => /^\/[\w\d\-_]+/g.test(relativeUrl);
-  const isNotMailto = relativeUrl => !relativeUrl.includes("mailto:");
+  const isRelativePath = url => /^\/[\w\d\-]+/g.test(url);
+  const isValidUrl = url => /(^http[s]?:\/{2})|(^www)|(^\/{1,2}[\w\d\-]+)/g.test(url);
 
   const findNodeWithUrl = (metadata, url) => {
     if (metadata.url === url) {
@@ -55,13 +55,15 @@ const generateSiteMetadata = async (rootUrl, logger = console) => {
         [...document.querySelectorAll("a")]
           .filter(link => {
             const href = link.getAttribute("href");
-            return href && isNotMailto(href) && (href.includes(domain) || isRelativePath(href));
+            return href && isValidUrl(href);
           })
           .forEach(link => {
             const fullLinkUrl = addHostname(link.getAttribute("href"));
             if (!visitedPages.includes(fullLinkUrl) && !urlsToFetch.includes(fullLinkUrl)) {
               parent.children.push(createNode(fullLinkUrl));
-              urlsToFetch.push(fullLinkUrl);
+              if (fullLinkUrl.includes(domain)) {
+                urlsToFetch.push(fullLinkUrl);
+              }
             }
           });
       } catch (error) {

@@ -121,7 +121,7 @@ describe("Web Crawler", () => {
     expect(axios.get).toHaveBeenCalledWith(url);
   });
 
-  it("filters external domains out", async () => {
+  it("does not fetch external domains, but still includes them", async () => {
     const url = "http://with-external-domain.com";
     mockPageVisit(url, "mainPage");
 
@@ -129,7 +129,12 @@ describe("Web Crawler", () => {
 
     expect(siteMap).toEqual({
       url,
-      children: [],
+      children: [
+        {
+          url: "http://to-be-filtered-out.com",
+          children: [],
+        },
+      ],
     });
     expect(axios.get).toHaveBeenCalledTimes(1);
     expect(axios.get).toHaveBeenCalledWith(url);
