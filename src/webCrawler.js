@@ -9,12 +9,12 @@ const createNode = (url, children = []) => ({
   children,
 });
 
-const findNodeWithUrl = (metadata, url) => {
-  if (metadata.url === url) {
-    return metadata;
+const findNodeWithUrl = (siteMap, url) => {
+  if (siteMap.url === url) {
+    return siteMap;
   }
 
-  const children = [...metadata.children];
+  const children = [...siteMap.children];
   while (children.length > 0) {
     const child = children.shift();
     if (child.url === url) {
@@ -29,8 +29,8 @@ const findNodeWithUrl = (metadata, url) => {
   return null;
 };
 
-const generatePageMetadata = async (rootUrl, logger) => {
-  const pageMetadata = createNode(rootUrl);
+const generateSiteMap = async (rootUrl, logger) => {
+  const siteMap = createNode(rootUrl);
 
   const domain = new URL(rootUrl).hostname;
   const visitedPages = [];
@@ -43,17 +43,14 @@ const generatePageMetadata = async (rootUrl, logger) => {
   const processLinks = (document, parent) => {
     [...document.querySelectorAll("a[href], link[href]")]
       .map(link => link.getAttribute("href"))
-      .filter(link => isValidUrl(link))
+      .filter(url => isValidUrl(url))
       .map(addHostname)
-      .forEach(fullLinkUrl => {
-        if (
-          !visitedPages.includes(fullLinkUrl) &&
-          !urlsToFetch.includes(fullLinkUrl) &&
-          isValidUrl(fullLinkUrl)
-        ) {
-          parent.children.push(createNode(fullLinkUrl));
-          if (fullLinkUrl.includes(domain)) {
-            urlsToFetch.push(fullLinkUrl);
+      .forEach(url => {
+        if (!visitedPages.includes(url) && !urlsToFetch.includes(url) && isValidUrl(url)) {
+          parent.children.push(createNode(url));
+
+          if (url.includes(domain)) {
+            urlsToFetch.push(url);
           }
         }
       });
@@ -62,7 +59,7 @@ const generatePageMetadata = async (rootUrl, logger) => {
   const processScripts = (document, parent) => {
     [...document.querySelectorAll("script[src]")]
       .map(script => script.getAttribute("src"))
-      .forEach(link => parent.children.push(createNode(link)));
+      .forEach(url => parent.children.push(createNode(url)));
   };
 
   while (urlsToFetch.length > 0) {
@@ -75,7 +72,7 @@ const generatePageMetadata = async (rootUrl, logger) => {
       const dom = new JSDOM(data);
       const { document } = dom.window;
 
-      const parent = findNodeWithUrl(pageMetadata, url);
+      const parent = findNodeWithUrl(siteMap, url);
       processLinks(document, parent);
       processScripts(document, parent);
     } catch (error) {
@@ -83,11 +80,11 @@ const generatePageMetadata = async (rootUrl, logger) => {
     }
   }
 
-  return pageMetadata;
+  return siteMap;
 };
 
 const generateSiteMetadata = async (rootUrl, logger = console) => ({
-  siteMap: await generatePageMetadata(rootUrl, logger),
+  siteMap: await generateSiteMap(rootUrl, logger),
 });
 
 export { generateSiteMetadata };
