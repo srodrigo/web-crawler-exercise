@@ -12,7 +12,7 @@ describe("Web Crawler", () => {
   });
 
   it("generates site map from a URL with one level of depth", async () => {
-    const url = "http://with-depth-one.com";
+    const url = "http://depth-one.com";
     mockPageVisit(url, "main-page");
     mockPageVisit(url, "product");
     mockPageVisit(url, "features");
@@ -39,7 +39,7 @@ describe("Web Crawler", () => {
   });
 
   it("generates site map from a URL with trailing slash", async () => {
-    const url = "http://with-depth-one.com/";
+    const url = "http://depth-one.com/";
     mockPageVisit(url, "main-page");
     mockPageVisit(url, "product");
     mockPageVisit(url, "features");
@@ -66,7 +66,7 @@ describe("Web Crawler", () => {
   });
 
   it("generates site map from a URL, recursively", async () => {
-    const url = "http://website.com";
+    const url = "http://multiple-levels-of-depth.com";
     mockPageVisit(url, "main-page");
     mockPageVisit(url, "product");
     mockPageVisit(url, "features");
@@ -110,7 +110,7 @@ describe("Web Crawler", () => {
   });
 
   it("includes assets", async () => {
-    const url = "http://with-assets.com";
+    const url = "http://assets.com";
     mockPageVisit(url, "main-page");
 
     const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
@@ -133,7 +133,7 @@ describe("Web Crawler", () => {
   });
 
   it("does not fetch non-fetchable assets, but still includes them", async () => {
-    const url = "http://with-non-fetchable-assets.com";
+    const url = "http://non-fetchable-assets.com";
     mockPageVisit(url, "main-page");
 
     const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
@@ -152,7 +152,7 @@ describe("Web Crawler", () => {
   });
 
   it("does not include anchor links", async () => {
-    const url = "http://with-anchors.com";
+    const url = "http://anchors.com";
     mockPageVisit(url, "main-page");
 
     const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
@@ -166,7 +166,7 @@ describe("Web Crawler", () => {
   });
 
   it("does not include mailto links", async () => {
-    const url = "http://with-mailto.com";
+    const url = "http://mailto.com";
     mockPageVisit(url, "main-page");
 
     const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
@@ -180,7 +180,7 @@ describe("Web Crawler", () => {
   });
 
   it("does not fetch external domains, but still includes them", async () => {
-    const url = "http://with-external-domain.com";
+    const url = "http://external-domain.com";
     mockPageVisit(url, "main-page");
 
     const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
@@ -199,7 +199,7 @@ describe("Web Crawler", () => {
   });
 
   it("does not fetch external domains containing a reference to the website domain, but still includes them", async () => {
-    const url = "http://with-external-domain-with-reference.com";
+    const url = "http://external-domain-with-reference.com";
     mockPageVisit(url, "main-page");
 
     const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
@@ -218,7 +218,7 @@ describe("Web Crawler", () => {
   });
 
   it("does not visit pages twice", async () => {
-    const url = "http://with-duplicate-pages.com";
+    const url = "http://duplicate-pages.com";
     mockPageVisit(url, "main-page");
     mockPageVisit(url, "inner-page");
 
@@ -234,7 +234,7 @@ describe("Web Crawler", () => {
   });
 
   it("does not include the same pages twice", async () => {
-    const url = "http://with-multiple-occurences.com";
+    const url = "http://multiple-occurences.com";
     mockPageVisit(url, "main-page");
     mockPageVisit(url, "inner-page");
     mockPageVisit(url, "another-page");
