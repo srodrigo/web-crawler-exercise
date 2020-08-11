@@ -4,11 +4,11 @@ import { JSDOM } from "jsdom";
 const generateSiteMetadata = async (rootUrl, logger = console) => {
   const domain = new URL(rootUrl).hostname;
 
-  const addHostname = url =>
-    url.includes(domain) || !isRelativePath(url) ? url : `${rootUrl}${url}`;
-
   const isRelativePath = url => /^\/[\w\d\-]+/g.test(url);
   const isValidUrl = url => /(^http[s]?:\/{2})|(^www)|(^\/{1,2}[\w\d\-]+)/g.test(url);
+
+  const addHostname = url =>
+    url.includes(domain) || !isRelativePath(url) ? url : `${rootUrl}${url}`;
 
   const findNodeWithUrl = (metadata, url) => {
     if (metadata.url === url) {
