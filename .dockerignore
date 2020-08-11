@@ -11,3 +11,5 @@ Dockerfile
 .gitignore
 
 *.sh
+
+README.md
