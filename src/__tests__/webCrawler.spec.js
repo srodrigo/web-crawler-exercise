@@ -1,19 +1,8 @@
 import axios from "axios";
-import fs from "fs";
 
 import { generateSiteMetadata } from "../webCrawler";
-
-const extractDomain = url => url.replace("http://", "");
-const loadWebsitePage = (url, page) =>
-  fs.readFileSync(`./src/__tests__/fixtures/${extractDomain(url)}-${page}.html`, "utf8");
-
-const mockPageVisit = (url, page) => {
-  axios.get.mockImplementationOnce(() => Promise.resolve({ data: loadWebsitePage(url, page) }));
-};
-
-const createSilentLogger = () => ({
-  log: () => {},
-});
+import { mockPageVisit } from "./fixtures/requests";
+import { createSilentLogger } from "../logger";
 
 jest.mock("axios");
 

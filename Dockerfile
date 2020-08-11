@@ -10,4 +10,4 @@ COPY . .
 
 RUN npm run build
 
-CMD node ./dist/index.js $URL
+CMD node ./dist/index.js $URL --production
