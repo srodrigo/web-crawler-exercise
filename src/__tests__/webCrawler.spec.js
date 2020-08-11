@@ -93,7 +93,7 @@ describe("Web Crawler", () => {
     expect(axios.get).toHaveBeenCalledWith(`${url}/product-second-page-child`);
   });
 
-  it("filters anchors out", async () => {
+  it("does not include anchor links", async () => {
     const url = "http://with-anchors.com";
     mockPageVisit(url, "mainPage");
 
@@ -107,7 +107,7 @@ describe("Web Crawler", () => {
     expect(axios.get).toHaveBeenCalledWith(url);
   });
 
-  it("filters mailto out", async () => {
+  it("does not include mailto links", async () => {
     const url = "http://with-mailto.com";
     mockPageVisit(url, "mainPage");
 
