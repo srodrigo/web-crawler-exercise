@@ -41,33 +41,46 @@ const generateSiteMetadata = async (rootUrl, logger = console) => {
     const visitedPages = [];
     const urlsToFetch = [addHostname(rootUrl)];
 
+    const processLinks = (document, parent) => {
+      [...document.querySelectorAll("a[href], link[href]")]
+        .map(link => link.getAttribute("href"))
+        .filter(link => isValidUrl(link))
+        .map(addHostname)
+        .forEach(fullLinkUrl => {
+          if (
+            !visitedPages.includes(fullLinkUrl) &&
+            !urlsToFetch.includes(fullLinkUrl) &&
+            isValidUrl(fullLinkUrl)
+          ) {
+            parent.children.push(createNode(fullLinkUrl));
+            if (fullLinkUrl.includes(domain)) {
+              urlsToFetch.push(fullLinkUrl);
+            }
+          }
+        });
+    };
+
+    const processScripts = (document, parent) => {
+      [...document.querySelectorAll("script[src]")]
+        .map(script => script.getAttribute("src"))
+        .forEach(link => parent.children.push(createNode(link)));
+    };
+
     while (urlsToFetch.length > 0) {
-      const fullUrl = urlsToFetch.shift();
-      visitedPages.push(fullUrl);
+      const url = urlsToFetch.shift();
+      visitedPages.push(url);
 
       try {
-        logger.log(`Fetching ${fullUrl}`);
-        const { data } = await axios.get(fullUrl);
+        logger.log(`Fetching ${url}`);
+        const { data } = await axios.get(url);
         const dom = new JSDOM(data);
         const { document } = dom.window;
 
-        const parent = findNodeWithUrl(pageMetadata, fullUrl);
-        [...document.querySelectorAll("a")]
-          .filter(link => {
-            const href = link.getAttribute("href");
-            return href && isValidUrl(href);
-          })
-          .forEach(link => {
-            const fullLinkUrl = addHostname(link.getAttribute("href"));
-            if (!visitedPages.includes(fullLinkUrl) && !urlsToFetch.includes(fullLinkUrl)) {
-              parent.children.push(createNode(fullLinkUrl));
-              if (fullLinkUrl.includes(domain)) {
-                urlsToFetch.push(fullLinkUrl);
-              }
-            }
-          });
+        const parent = findNodeWithUrl(pageMetadata, url);
+        processLinks(document, parent);
+        processScripts(document, parent);
       } catch (error) {
-        logger.log(`Could not fetch ${fullUrl}`);
+        logger.log(`Could not fetch ${url}`);
       }
     }
 
