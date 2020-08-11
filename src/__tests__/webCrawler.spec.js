@@ -132,6 +132,25 @@ describe("Web Crawler", () => {
     expect(axios.get).toHaveBeenCalledWith(url);
   });
 
+  it("does not fetch non-fetchable assets, but still includes them", async () => {
+    const url = "http://with-non-fetchable-assets.com";
+    mockPageVisit(url, "mainPage");
+
+    const { siteMap } = await generateSiteMetadata(url, createSilentLogger());
+
+    expect(siteMap).toEqual({
+      url,
+      children: [
+        {
+          url: "http://file.pdf",
+          children: [],
+        },
+      ],
+    });
+    expect(axios.get).toHaveBeenCalledTimes(1);
+    expect(axios.get).toHaveBeenCalledWith(url);
+  });
+
   it("does not include anchor links", async () => {
     const url = "http://with-anchors.com";
     mockPageVisit(url, "mainPage");
