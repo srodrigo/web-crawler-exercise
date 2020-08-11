@@ -2,7 +2,7 @@
 
 Crawls a website and outputs the site map, including assets and links between pages.
 
-When running the script, the site map is output both on the console and in `./output/siteMap.txt`.
+When running the script, the site map is output both on the terminal and in `./output/siteMap.txt`.
 
 ## Run in docker
 
