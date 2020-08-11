@@ -11,6 +11,9 @@ fi
 
 docker build -t web-crawler-exercise/app .
 
+mkdir -p ./output
+
 docker run --rm \
   -e URL=$1 \
+  -v ${PWD}/output:/app/output \
   web-crawler-exercise/app
